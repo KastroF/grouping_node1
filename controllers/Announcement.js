@@ -9,6 +9,7 @@ const { GoogleAuth } = require("google-auth-library");
 const fs = require("fs");
 const http = require("https");
 const axios = require("axios");
+const Notification = require("../models/Notification")
 
 exports.avoirLesAnnonces = async (req, res) => {
   const startAt = req.body.startAt ? req.body.startAt : 0;
@@ -1269,7 +1270,7 @@ exports.toggleActiveStatus = async (req, res) => {
       
       await newNotification.save();
       
-      const badge = await Notification.countDocument({receiverId: user._id}); 
+      const badge = await Notification.countDocuments({receiverId: user._id}); 
       
       for(let token of tokens){
         
