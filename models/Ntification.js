@@ -10,3 +10,6 @@ const notificationSchema = mongoose.Schema({
     date: {type: Date}, 
     read: {type: Boolean}
 })
+
+
+module.exports = mongoose.model("Notification", notificationSchema);
