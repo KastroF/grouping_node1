@@ -11,7 +11,8 @@ const userSchema = mongoose.Schema({
   role: { type: String, default: null }, // Attribut 'role' ajouté
   locked: { type: Boolean, default: false }, //propriété permettant de savoir si un user a été bloqué ou pas
   addUserId: { type: String, default: null }, //identifiant de l'administrateur ayant ajouter un autre
-  appleId: {type: String}
+  appleId: {type: String}, 
+  
 });
 
 module.exports = mongoose.model("User", userSchema);
