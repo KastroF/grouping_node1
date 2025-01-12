@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
 
- exports.updateFcmToken = (req, res) => {
+ exports.updateFcmToken = async (req, res) => {
   
   
    try{
@@ -12,6 +12,29 @@ const nodemailer = require("nodemailer");
       const {fcmToken, deviceId} = req.body; 
    
       const userId = req.auth.userId; 
+     
+       const user = await User.findOne({_id: userId}); 
+     
+       const tokens = user.fcmTokens ? user.fcmTokens : []; 
+     
+       const value = tokens.filter(item => (item.fcmToken === fcmToken && item.deviceId === deviceId)); 
+       let newToken; 
+     
+       if(value.length === 0){
+         
+         newToken = {deviceId, fcmToken}; 
+         tokens
+         
+       }else{
+         
+           //if(value[0].fcmToken)
+           const leToken = tokens.filter(item => item.deviceId === deviceId)[0]; 
+         
+           if(leToken && leToken.fcmToken !== fcmToken){
+             
+               
+           }
+       }
    
      
      
