@@ -3,6 +3,26 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
+
+ exports.updateFcmToken = (req, res) => {
+  
+  
+   try{
+     
+      const {fcmToken, deviceId} = req.body; 
+   
+      const userId = req.auth.userId; 
+   
+     
+     
+   }catch(err){
+     
+       console.log(err); 
+       res.status(505).json({err})
+   }
+  
+}
+
 const genererCode = () => {
   var code = "";
   for (var i = 0; i < 4; i++) {
