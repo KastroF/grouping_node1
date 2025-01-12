@@ -7,6 +7,7 @@ const nodemailer = require("nodemailer");
  exports.updateFcmToken = async (req, res) => {
   
   console.log("On est prêt")
+   
    try{
      
       const {fcmToken, deviceId} = req.body; 
@@ -15,9 +16,12 @@ const nodemailer = require("nodemailer");
      
        const user = await User.findOne({_id: userId}); 
      
-       const tokens = user.fcmToken && user.fcmToken.length > 0 ? user.fcmTokens : []; 
+       const tokens = user.fcmToken && user.fcmToken.length > 0 ? user.fcmToken : []; 
      
        const value = tokens.filter(item => (item.fcmToken === fcmToken && item.deviceId === deviceId)); 
+     
+       
+     
        let newToken; 
      
        if(value.length === 0){
@@ -38,7 +42,9 @@ const nodemailer = require("nodemailer");
      
        await User.updateOne({_id: userId}, {$set: {fcmToken: tokens}}); 
      
-       res.status(200).json({status: 0, message: "Mise à jour effectuée avec succès"});
+       user.fcmToken = tokens; 
+     
+       res.status(200).json({status: 0, message: "Mise à jour effectuée avec succès", user});
    
      
      
