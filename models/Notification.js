@@ -8,7 +8,8 @@ const notificationSchema = mongoose.Schema({
     title: {type: String}, 
     body: {type: String}, 
     date: {type: Date}, 
-    read: {type: Boolean}
+    read: {type: Boolean}, 
+    view: {type: Boolean},
 })
 
 
