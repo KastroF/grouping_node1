@@ -34,7 +34,7 @@ const countryRouter = require("./routes/Country");
 const announcementRouter = require("./routes/Announcement"); 
 const messageRouter = require("./routes/Message");
 const notificationRouter = require("./routes/Notification");
-const searchRouter = require("./routes/Search");
+//const searchRouter = require("./routes/Search");
 
 
 app.use("/api/country", countryRouter)
@@ -45,6 +45,6 @@ app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/api/annonce", announcementRouter);
 app.use("/api/message", messageRouter); 
 app.use("/api/notification", notificationRouter);
-app.use("/api/search", searchRouter);
+//app.use("/api/search", searchRouter);
 
 module.exports = app;
