@@ -1276,7 +1276,7 @@ exports.toggleActiveStatus = async (req, res) => {
         
           await sendPushNotification(token.fcmToken,"Félicitations" , 
             "L'annonce sur votre conteneur est désormais active et visible pour tous. Retrouvez là dans vos annonces", 
-            badge, {"status": 0, "badge": badge})
+            badge, {"status": `0`, "badge": `${badge}`})
       }
       
     }
