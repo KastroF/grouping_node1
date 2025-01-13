@@ -46,7 +46,7 @@ exports.getNotifications = async (req, res) => {
       const messages = await Message.find({$or: [{user1Id: req.auth.userId}, {user2Id: req.auth.userId }]}).sort({date: -1}).skip(startAt).limit(10); 
       
       
-      res.status(200).json({}); 
+      res.status(200).json({status: 0, notifs, messages, startAt: messages.length === 10 ? parseInt(startAt) + 10 : null}); 
       
     }catch(err){
       
