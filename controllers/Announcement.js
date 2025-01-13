@@ -761,13 +761,13 @@ exports.addAnnouncementWithPdf = async (req, res) => {
  
     
       
-  console.log("month", new(dateOfDeparture) + 2)
+  console.log("month", new Date(dateOfDeparture).getMonth() + 2)
     
   announcement.save().then(
     async (annoncee) => {
       
   const search = await Search.findOne({startCity: req.body.startCity, endCity: req.body.endCity, type: "container",
-          year: new(dateOfDeparture).getFullYear()}, {$or: [{month: new(dateOfDeparture) + 1}, {month: new(dateOfDeparture) + 2}]});
+          year: new Date(dateOfDeparture).getFullYear(), $or: [{month: new Date(dateOfDeparture).getMonth() + 1}, {month: new Date(dateOfDeparture).getMonth() + 2}]});
 
       console.log("la recherche", search);
       
@@ -780,7 +780,10 @@ exports.addAnnouncementWithPdf = async (req, res) => {
       const newNotif = Notification({
         title: "Bonne nouvelle", 
         body: "Un container correspondant à une de vos recherche a été trouvé", 
-        userId: user._id
+        date: new Date(), 
+        read: false, 
+        view: false,
+        receiverId: user._id
       })
     
       for(let token of user.fcmToken){

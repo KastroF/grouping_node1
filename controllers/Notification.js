@@ -24,7 +24,7 @@ exports.getNotReadNotifications = (req, res) => {
       
       const badges = Notification.countDocuments({_id: req.auth.userId, read: false}); 
       
-      res.status(201).json({status: 0});
+      res.status(201).json({status: 0, badges});
       
     }catch(err){
       
