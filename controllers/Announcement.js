@@ -972,6 +972,8 @@ function monthNameToNumber(monthName) {
 
 exports.annoncesRecherche = async (req, res) => {
   //console.log(req.body);
+  
+  console.log("est ce que tu t'en rend compte ?")
 
   // console.log(monthNameToNumber(req.body.month))
 
@@ -1022,6 +1024,11 @@ exports.annoncesRecherche = async (req, res) => {
     for (let kilo of annonces) {
       kilo.startCity2 = await City.findOne({ name: kilo.startCity });
       kilo.endCity2 = await City.findOne({ name: kilo.endCity });
+    }
+    
+    if(annonces.length === 0){
+      
+        
     }
 
     res.status(200).json({
