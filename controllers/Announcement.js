@@ -668,7 +668,9 @@ exports.toggleActiveStatus = async (req, res) => {
   }
 };
 
-exports.addAnnouncementWithPdf = (req, res) => {
+exports.addAnnouncementWithPdf = async (req, res) => {
+  
+  try{
   const draft = [
     `${req.protocol}s://${req.get("host")}/pdf_documents/${req.file.filename}`,
   ];
@@ -701,6 +703,12 @@ exports.addAnnouncementWithPdf = (req, res) => {
       res.status(505).json({ err });
     }
   );
+    
+  }catch(err){
+    
+      console.log(err); 
+      
+  }
 };
 
 exports.addAnnouncementWithImages = (req, res) => {
