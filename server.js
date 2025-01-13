@@ -55,6 +55,7 @@ io.on("connection", (socket) => {
   socket.broadcast.emit("userStatusChanged", {
     userId: socket.userId,
     status: "online",
+    usersConnected : connectedUsers
   });
 
   // Rejoindre une room
