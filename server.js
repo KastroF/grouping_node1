@@ -91,19 +91,24 @@ io.on("connection", (socket) => {
       });
 
       // Mise à jour du statut du message
+   const rooms = io.sockets.adapter.rooms;
+    if (rooms.has(roomId)) {
       io.to(roomId).emit("messageStatusUpdate", {
         _id: savedMessage._id,
         status: "sent",
-        text: savedMessage.text, 
-        user1Id: savedMessage.senderId
+        text: savedMessage.text,
+        user1Id: savedMessage.senderId,
       });
+    } else {
+      console.error(`Room ${roomId} introuvable ou aucun utilisateur n'est connecté.`);
+    }
       
-      socket.to(roomId).emit("messageStatusUpdate", {
+    /*  socket.emit("messageStatusUpdate", {
         _id: savedMessage._id,
         status: "sent",
         text: savedMessage.text, 
-        user1Id: savedMessage.senderId
-      });
+        senderId: savedMessage.senderId
+      });*/
 
       if (receiverSocketId) {
         temporaryMessage.date = savedMessage.date;
