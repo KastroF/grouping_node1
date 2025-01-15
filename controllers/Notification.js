@@ -43,6 +43,8 @@ exports.getNotifications = async (req, res) => {
         
       const notifs = await  Notification.find({receiverId: req.auth.userId, authorId: "grouping"}).sort({date: -1}).limit(3);
       
+      
+      
       const messages = await Message.find({$or: [{user1Id: req.auth.userId}, {user2Id: req.auth.userId }]}).sort({date: -1}).skip(startAt).limit(10); 
       
       
