@@ -46,76 +46,68 @@ exports.getNotifications = async (req, res) => {
       
       
       
-         const pipeline = [
-      // Filtrer les messages selon les conditions user1Id ou user2Id
+    const pipeline = [
+      // Étape 1 : Filtrer les messages où user2Id correspond à userId
       {
         $match: {
-          
-           
-             user2Id: userId 
-          
+          user2Id: userId, // Filtrer uniquement les messages pertinents
         },
       },
-
-      // Tri des messages par date décroissante
-      { $sort: { date: -1 } },
-
-      // Sauter les messages déjà parcourus
-      { $skip: startAt },
-
-      // Regrouper les messages par utilisateur unique
+      // Étape 2 : Trier les messages par date décroissante
       {
-        $group: {
-          _id: {
-            user: {
-              $cond: [
-                { $eq: ["$user2Id", userId] },
-                "$user2Id",
-                "$user1Id",
-              ],
-            },
-          }, // Grouper par utilisateur distinct
-          firstMessage: { $first: "$$ROOT" }, // Conserver le premier message trouvé pour ce user
+        $sort: { date: -1 },
+      },
+      // Étape 3 : Sauter les messages déjà parcourus
+      {
+        $skip: startAt,
+      },
+      // Étape 4 : Lier les messages aux utilisateurs via user1Id (string -> ObjectId)
+     {
+        $addFields: {
+          user1ObjectId: { $toObjectId: "$user1Id" },
         },
       },
-
-      // Ajouter les détails des utilisateurs
+      // Étape 5 : Lier les messages aux utilisateurs via user1ObjectId
       {
         $lookup: {
-          from: "users", // Collection users
-          localField: "_id.user",
-          foreignField: "_id",
-          as: "userDetails",
+          from: "users", // Nom de la collection des utilisateurs
+          localField: "user1ObjectId", // Champ converti en ObjectId
+          foreignField: "_id", // Champ dans les utilisateurs
+          as: "user",
         },
       },
-
-      // Transformer les détails de l'utilisateur en un objet
+      // Étape 5 : Déstructurer le tableau "user" pour obtenir un objet utilisateur unique
       {
-        $addFields: {
-          userDetails: { $arrayElemAt: ["$userDetails", 0] },
+        $unwind: "$user",
+      },
+      // Étape 6 : Grouper les messages par utilisateur pour trouver uniquement le premier message de chaque utilisateur
+      {
+        $group: {
+          _id: "$user._id", // Grouper par ID utilisateur
+          firstMessage: { $first: "$$ROOT" }, // Conserver le premier message trouvé
         },
       },
-
-      // Limiter à 10 utilisateurs distincts
-      { $limit: 10 },
+      // Étape 7 : Limiter à 10 utilisateurs distincts
+      {
+        $limit: 10,
+      },
     ];
 
-    // Exécuter le pipeline d'agrégation
-    const results = await Message.aggregate(pipeline);
+    // Exécuter l'agrégation
+    const result = await Message.aggregate(pipeline);
 
-    // Obtenir l'indice de fin
-    const distinctUserIds = new Set(results.map((res) => res._id.user));
-    const totalMessagesParsed = startAt + results.length;
+    // Étape 8 : Calculer l'indice d'arrêt
+    const stopIndex = startAt + result.length;
 
-    // Vérifier si on a parcouru tous les messages sans atteindre 10 utilisateurs distincts
-    const hasMoreMessages = distinctUserIds.size < 10;
+    // Vérifier si tous les messages ont été parcourus sans atteindre 10 utilisateurs
+    const endReached = result.length < 10;
       
       
-      res.status(200).json({status: 0, notifs, messages: results.map((res) => ({
-        user: res.userDetails,
-        message: res.firstMessage,
+      res.status(200).json({status: 0, notifs, messages: result.map((r) => ({
+        user: r.firstMessage.user,
+        firstMessage: r.firstMessage,
       })),
-      startAt: hasMoreMessages ? totalMessagesParsed : null}); 
+      stopIndex: endReached ? null : stopIndex,}); 
       
     }catch(err){
       
