@@ -42,7 +42,7 @@ exports.getNotifications = async (req, res) => {
   
     try{
         
-      const notifs = await  Notification.find({receiverId: req.auth.userId, authorId: "grouping"}).sort({date: -1}).limit(3);
+      const notifs = await  Notification.find({receiverId: req.auth.userId, authorId: "grouping", desactived: false}).sort({date: -1}).limit(3);
       
       
       
@@ -115,4 +115,9 @@ exports.getNotifications = async (req, res) => {
         res.status(505).json({err})
     }
    
+}
+
+exports.deleteNotif = (req, res) => {
+  
+    
 }

@@ -10,6 +10,7 @@ const notificationSchema = mongoose.Schema({
     date: {type: Date}, 
     read: {type: Boolean}, 
     view: {type: Boolean},
+    desactived: {type: Boolean}
 })
 
 
