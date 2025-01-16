@@ -22,6 +22,6 @@ router.post("/togglelockstatus", auth, userCtrl.toggleLockStatus)
 router.post("/addadmin", auth, multer2, userCtrl.addUser); 
 router.post("/connectwithapple", userCtrl.connectWithApple);
 router.post("/updatefcmToken", auth, userCtrl.updateFcmToken); 
-router.post("/")
+router.post("/changename", auth, userCtrl.changeName);
 
 module.exports = router;
