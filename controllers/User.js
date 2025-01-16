@@ -4,6 +4,20 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
 
+exports.changeName = async (req, res) => {
+  
+    try{
+      
+      User.updateOne({_id: req.auth.userId}, {$set: {name: }})
+      
+    }catch(err){
+      
+        console.log(err); 
+        res.status(505).json({err})
+    }
+}
+
+
  exports.updateFcmToken = async (req, res) => {
   
   console.log("On est prêt")
@@ -60,6 +74,9 @@ const nodemailer = require("nodemailer");
    }
   
 }
+ 
+ 
+ 
 
 const genererCode = () => {
   var code = "";
