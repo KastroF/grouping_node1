@@ -121,7 +121,7 @@ exports.deleteNotif = async (req, res) => {
   
     try{
       
-      Notification.updateOne({_id: req.body._id}, {desactived: false}); 
+      await Notification.updateOne({_id: req.body._id}, {$set: {desactived: true}}); 
       
       res.status(200).json({status: 0})
       
