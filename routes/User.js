@@ -24,6 +24,6 @@ router.post("/connectwithapple", userCtrl.connectWithApple);
 router.post("/updatefcmToken", auth, userCtrl.updateFcmToken); 
 router.post("/changename", auth, userCtrl.changeName);
 router.post("/changephoto", auth, multer2, userCtrl.changePhoto);
-
+router.post("/changepassword", auth, userCtrl.changePassword);
 
 module.exports = router;

@@ -467,8 +467,8 @@ exports.changePassword = (req, res) => {
             message: "Utilisateur non autorisé, compte bloqué",
           });
         }
-        bcrypt.compare(req.body.password, user.password).then(
-          (valid) => {
+        bcrypt.compare(req.body.last, user.password).then(
+          async (valid) => {
             if (!valid) {
               res.status(200).json({
                 status: 1,
@@ -477,7 +477,8 @@ exports.changePassword = (req, res) => {
             } else {
  
               
-              await  
+            const hash =   await  bcrypt.hash(req.body.newPass, 10); 
+              User.updateOne({_id: user._id}, {$set: {password: hash}})
 
               res.status(200).json({
                 status: 0,
