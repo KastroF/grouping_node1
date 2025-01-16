@@ -19,6 +19,22 @@ exports.changeName = async (req, res) => {
     }
 }
 
+exports.changePhoto = async (req, res) => {
+  
+    try{
+      
+      console.log(req.file);
+      
+      res.status(200).json({status: 0});
+      
+    }catch(err){
+      
+        console.log(err); 
+        res.status(505).json({err})
+    }
+    
+}
+
 
  exports.updateFcmToken = async (req, res) => {
   
