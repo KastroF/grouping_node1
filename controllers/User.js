@@ -484,7 +484,7 @@ exports.changePassword = (req, res) => {
               
             const hash =   await  bcrypt.hash(req.body.newPass, 10); 
               
-              User.updateOne({_id: user._id}, {$set: {password: hash}})
+              await User.updateOne({_id: user._id}, {$set: {password: hash}})
 
               res.status(200).json({
                 status: 0,
