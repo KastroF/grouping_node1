@@ -826,6 +826,7 @@ exports.addAnnouncementWithImages = (req, res) => {
 };
 
 exports.addAnnouncement = (req, res) => {
+  
   if (req.body.status === "kilos") {
     //console.log("la dix", req.body);
 
@@ -858,7 +859,7 @@ exports.addAnnouncement = (req, res) => {
       .then(async (annoncee) => {
       
           const search = await Search.findOne({startCity: req.body.startCity, endCity: req.body.endCity, status: "kilos",
-          year: new Date(dateOfDeparture).getFullYear(), $or: [{month: new Date(dateOfDeparture).getMonth() + 1}, {month: new Date(dateOfDeparture).getMonth() + 2}]});
+          year: new Date(dateOfDeparture).getFullYear().toString(), $or: [{month: (new Date(dateOfDeparture).getMonth() + 1).toString()}, {month: (new Date(dateOfDeparture).getMonth() + 2).toString()}]});
 
       console.log("la recherche", search);
       
@@ -869,6 +870,7 @@ exports.addAnnouncement = (req, res) => {
       const badgee = await Notification.countDocuments({read: false, userId: userr._id})
       
       const newNotif = Notification({
+        
         title: "Bonne nouvelle", 
         body: "Un container correspondant à une de vos recherche a été trouvé", 
         date: new Date(), 
