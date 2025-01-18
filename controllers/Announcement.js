@@ -883,7 +883,7 @@ exports.addAnnouncement = (req, res) => {
     
       for(let tokennn of userr.fcmToken){
         
-          await sendPushNotification(tokennn, "Bonne nouvelle", "Un container correspondant à une de vos recherche a été trouvé", badgee, {annonceId: annoncee._id} )
+          await sendPushNotification(tokennn.fcmToken, "Bonne nouvelle", "Un container correspondant à une de vos recherche a été trouvé", badgee, {annonceId: annoncee._id} )
       
       }
     
