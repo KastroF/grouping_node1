@@ -10,6 +10,7 @@ const notificationSchema = mongoose.Schema({
     date: {type: Date}, 
     read: {type: Boolean}, 
     view: {type: Boolean},
+    annonceId: {type: String},
     desactived: {type: Boolean, default: false}
 })
 

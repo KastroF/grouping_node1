@@ -882,7 +882,8 @@ exports.addAnnouncement = (req, res) => {
         read: false, 
         view: false,
         receiverId: userr._id, 
-        authorId: "grouping"
+        authorId: "grouping", 
+        annonceId: annoncee._id
       })
       
       await newNotif.save();
@@ -1354,7 +1355,8 @@ exports.toggleActiveStatus = async (req, res) => {
         read: false, 
         view: false,
         receiverId: userr._id, 
-        authorId: "grouping"
+        authorId: "grouping", 
+        annonceId: announcement._id
       })
       
       await newNotif.save();
