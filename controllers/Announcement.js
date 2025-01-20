@@ -1356,7 +1356,7 @@ exports.toggleActiveStatus = async (req, res) => {
     
       for(let tokennn of userr.fcmToken){
         
-          await sendPushNotification(tokennn, "Bonne nouvelle", "Un container correspondant à une de vos recherche a été trouvé", badgee, {annonceId: announcement._id} )
+          await sendPushNotification(tokennn.fcmToken, "Bonne nouvelle", "Un container correspondant à une de vos recherche a été trouvé", badgee, {annonceId: announcement._id} )
       
       }
     
