@@ -872,7 +872,7 @@ exports.addAnnouncement = (req, res) => {
   if(search){
     
       const userr = await User.findOne({_id: search.userId});
-      const badgee = await Notification.countDocuments({read: false, userId: userr._id})
+     
       
       const newNotif = Notification({
         
@@ -887,6 +887,8 @@ exports.addAnnouncement = (req, res) => {
       })
       
       await newNotif.save();
+    
+     const badgee = await Notification.countDocuments({read: false, userId: userr._id})
     
       console.log("le bon truc ", badgee);
     //  console.log()
