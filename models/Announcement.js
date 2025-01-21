@@ -21,7 +21,7 @@ const AnnouncementSchema = mongoose.Schema({
     coords: {type: Object, default: null},
     locked: {type: Boolean, default: null}, 
     views: {type: Number}, 
-  
+    read: {type: Boolean, default: false}
     
     
 })
