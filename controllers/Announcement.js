@@ -887,6 +887,8 @@ exports.addAnnouncement = (req, res) => {
       })
       
       await newNotif.save();
+    
+      console.log("le bon truc ", badgee);
     //  console.log()
     
       for(let tokennn of userr.fcmToken){
