@@ -14,10 +14,7 @@ exports.getMessages = async (req, res) => {
       .skip(req.body.startAt)
       .limit(10);
     
-      await Message.updateMany({$or: [ {$and:[{user1Id: req.auth.userId}, {user2Id: req.body.user2}] }, {$and: [{user2Id: req.auth.userId}, {user1Id: req.body.user2}]}]
-      
-      
-    }, {$set: {read: true}});
+      await Message.updateMany({user2Id: req.body.user2}, {$set: {read: true}});
 
     const user = await User.findOne({ _id: req.body.user2 });
 
