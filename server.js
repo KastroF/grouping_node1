@@ -89,6 +89,8 @@ io.on("connection", (socket) => {
         receiverId,
         text: message.text,
       });
+      
+      
 
       // Mise à jour du statut du message
    const rooms = io.sockets.adapter.rooms;
