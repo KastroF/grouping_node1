@@ -157,17 +157,18 @@ io.on("connection", (socket) => {
         receiverId,
         text: message.text,
       });
-      
+    
+  const sender = await User.findOne({_id: message.sender});
   const userr = await User.findOne({_id: receiverId});
       
       
-  const badge = await Notification.countDocuments({})
+  const badge = await Notification.countDocuments({receiverId, view: false})
       
   for(let token of userr.fcmToken){
     
-                await sendPushNotification(token.fcmToken,"Félicitations" , 
-            "L'annonce sur votre conteneur est désormais active et visible pour tous. Retrouvez-la dans vos annonces", 
-            badge, {"status": `0`, "badge": `${badge}`})
+                await sendPushNotification(token.fcmToken, sender.name , 
+            `${message.text}`, 
+            badge, {"status": `5`, senderId: socket.userId, "badge": `${badge}`})
   }
 
       // Mise à jour du statut du message
