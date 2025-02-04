@@ -914,9 +914,14 @@ exports.addAnnouncement = (req, res) => {
 };
 
 exports.getAnnouncementsById = async (req, res) => {
+  
+  console.log("On respecte ca"); 
   //console.log("On commence");
 
   try {
+    
+    await Announcement.updateMany({userId: req.auth.userId, active: false}, {$set: {read: true}}); 
+    
     const containers = await Announcement.find({
       userId: req.auth.userId,
       active: true,
