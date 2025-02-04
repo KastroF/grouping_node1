@@ -920,7 +920,7 @@ exports.getAnnouncementsById = async (req, res) => {
 
   try {
     
-    await Announcement.updateMany({userId: req.auth.userId, active: false}, {$set: {read: true}}); 
+    await Announcement.updateMany({userId: req.auth.userId, active: true}, {$set: {read: true}}); 
     
     const containers = await Announcement.find({
       userId: req.auth.userId,
