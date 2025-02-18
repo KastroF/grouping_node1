@@ -53,6 +53,10 @@ exports.getNotifications = async (req, res) => {
   
   console.log(userId);
   
+  const messages = await Message.find({user2Id: userId}); 
+  
+  console.log("les messages", messages);
+  
     try{
         
       const notifs = await  Notification.find({receiverId: req.auth.userId, authorId: "grouping", desactived: false}).sort({date: -1}).limit(3);
