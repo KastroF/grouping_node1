@@ -44,13 +44,18 @@ exports.getNotReadNotifications = async(req, res) => {
 
 exports.getNotifications = async (req, res) => {
   
+  
+  console.log("Un vrai fou");
+  
   const startAt = req.body.startAt ? req.body.startAt : 0;
   const userId = req.auth.userId; 
+  
+  
+  console.log(userId);
   
     try{
         
       const notifs = await  Notification.find({receiverId: req.auth.userId, authorId: "grouping", desactived: false}).sort({date: -1}).limit(3);
-      
       
       
     const pipeline = [
