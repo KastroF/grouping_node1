@@ -30,6 +30,8 @@ async function sendPushNotification(token, title, body, badge, data = {}) {
   try {
     // Obtenir le jeton OAuth 2.0
     const accessToken = await getAccessToken();
+    
+    console.log("le token access", accessToken);
 
     // Construire la charge utile du message
     const messagePayload = {
@@ -165,6 +167,13 @@ io.on("connection", (socket) => {
   const badge = await Notification.countDocuments({receiverId, view: false})
       
   for(let token of userr.fcmToken){
+    
+     console.log("le fcm token", token.fcmToken); 
+     console.log("le name", sender.name); 
+     console.log("le message", message.text); 
+     console.log("userId", socket.userId); 
+     console.log("le badge", badge); 
+            
     
             await sendPushNotification(token.fcmToken, sender.name , 
             `${message.text}`, 
