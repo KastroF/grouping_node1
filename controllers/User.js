@@ -33,6 +33,10 @@ const sendHttpUrl = async (email) => {
 exports.goToEmail = async (req, res) => {
   
       try{
+        
+        const  user = await User.findOne({email: req.body.email})
+        
+        
           
         await sendHttpUrl(req.body.email); 
         
