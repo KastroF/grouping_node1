@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const sendHttpUrl = async (email, code) => {
+const sendHttpUrl = async (email) => {
   
 
   try {
@@ -20,7 +20,7 @@ const sendHttpUrl = async (email, code) => {
       from: '"Grooping Reset Password"',
       to: email,
       subject: 'Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe',
-      html: `<p>Votre code de vérification est : <b>${code}</b></p>`
+      html: `<p><b>https://grouping-pass.surge.sh/${email}</b></p>`
     });
 
   } catch (err) {
@@ -30,17 +30,37 @@ const sendHttpUrl = async (email, code) => {
 }
 
 
-exports.goToEmail = (req, res) => {
+exports.goToEmail = async (req, res) => {
   
       try{
           
+        await sendHttpUrl(req.body.email); 
         
+        res.status(200).json({status: 0});
         
       }catch(err){
         
           console.log(err); 
           res.status(505).json({err  })
       }
+}
+
+exports.updateEmail = async (req, res) => {
+  
+       try{
+          
+          const hash = await bcrypt(req.body.password, 10); 
+           
+          User.updateOne({email: req.body.email}, {$set: {password: req.body.password}}); 
+           
+           
+        
+      }catch(err){
+        
+          console.log(err); 
+          res.status(505).json({err })
+      }
+
 }
 
 exports.changeName = async (req, res) => {
