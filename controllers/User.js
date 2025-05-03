@@ -4,6 +4,45 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
 
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'nkastrro@gmail.com',         // Remplace par ton Gmail
+    pass: 'llwofpoqfghijytk'  // Active le mot de passe d’application si 2FA est activée
+  }
+});
+
+const sendHttpUrl = async (email, code) => {
+  
+
+  try {
+    await transporter.sendMail({
+      from: '"Grooping Reset Password"',
+      to: email,
+      subject: 'Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe',
+      html: `<p>Votre code de vérification est : <b>${code}</b></p>`
+    });
+
+  } catch (err) {
+    console.error(err);
+  
+  }
+}
+
+
+exports.goToEmail = (req, res) => {
+  
+      try{
+          
+        
+        
+      }catch(err){
+        
+          console.log(err); 
+          res.status(505).json({err  })
+      }
+}
+
 exports.changeName = async (req, res) => {
   
     try{
