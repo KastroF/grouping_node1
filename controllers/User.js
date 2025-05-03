@@ -14,13 +14,15 @@ const transporter = nodemailer.createTransport({
 
 const sendHttpUrl = async (email, name) => {
   
+  const encodedEmail = encodeURIComponent(email);
+  
 
   try {
     await transporter.sendMail({
       from: '"Grooping Reset Password"',
       to: email,
       subject: 'Cliquez sur le lien ',
-      html: `<p>Bonjour très cher abonné <b>${name}</b>, Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe.  </p><p><b>https://grouping-pass.glitch.me/${email}</b></p>`
+      html: `<p>Bonjour très cher abonné <b>${name}</b>, Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe.  </p><p><b>https://grouping-pass.glitch.me/${encodedEmail}</b></p>`
     });
 
   } catch (err) {
