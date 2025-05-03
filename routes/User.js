@@ -25,7 +25,7 @@ router.post("/updatefcmToken", auth, userCtrl.updateFcmToken);
 router.post("/changename", auth, userCtrl.changeName);
 router.post("/changephoto", auth, multer2, userCtrl.changePhoto);
 router.post("/changepassword", auth, userCtrl.changePassword);
-router.post("/gotoemail", auth, userCtrl.goToEmail);
+router.post("/gotoemail", userCtrl.goToEmail);
 router.post("/updateemail", userCtrl.updateEmail); 
 
 module.exports = router;

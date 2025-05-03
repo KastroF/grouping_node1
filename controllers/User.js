@@ -12,15 +12,15 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-const sendHttpUrl = async (email) => {
+const sendHttpUrl = async (email, name) => {
   
 
   try {
     await transporter.sendMail({
       from: '"Grooping Reset Password"',
       to: email,
-      subject: 'Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe',
-      html: `<p><b>https://grouping-pass.surge.sh/${email}</b></p>`
+      subject: 'Cliquez sur le lien ',
+      html: `<p>Bonjour très cher abonné <b>${name}</b>, Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe.  </p><p><b>https://grouping-pass.surge.sh/${email}</b></p>`
     });
 
   } catch (err) {
@@ -36,11 +36,18 @@ exports.goToEmail = async (req, res) => {
         
         const  user = await User.findOne({email: req.body.email})
         
-        
+        if(user){
           
-        await sendHttpUrl(req.body.email); 
+            await sendHttpUrl(req.body.email, user.name); 
         
-        res.status(200).json({status: 0});
+            res.status(200).json({status: 0});
+          
+        }else{
+          
+          res.status(200).json({status: 1})
+        }
+          
+
         
       }catch(err){
         
