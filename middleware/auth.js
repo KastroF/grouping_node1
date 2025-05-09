@@ -4,6 +4,7 @@ const User = require("../models/User");
 module.exports = (req, res, next) => {
   
   console.log("la req", req.body);
+  console.log(req.headers.authorization);
   try {
     const token = req.headers.authorization.split(" ")[1];
 
@@ -71,7 +72,7 @@ module.exports = (req, res, next) => {
               })
             }*/
   } catch (error) {
-    console.log(error);
+    console.log("l'erreur", error);
     res.status(401).json({ error });
   }
 };
