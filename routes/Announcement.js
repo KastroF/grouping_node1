@@ -23,7 +23,7 @@ router.get("/getfalsekilo", auth, announcementCtrl.getFalseKilo)
 router.get("/getconversionrate", auth, announcementCtrl.getConversionRate)
 router.post("/updateactivecontainer", auth, announcementCtrl.toggleActiveStatus); 
 router.post("/avoirlesannonces", announcementCtrl.avoirLesAnnonces);
-
+router.post("/ajouterunconteneur", auth,  announcementCtrl.ajouterUnConteneur);
 
 module.exports = router; 
 

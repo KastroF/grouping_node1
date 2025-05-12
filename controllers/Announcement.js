@@ -75,6 +75,11 @@ async function sendPushNotification(token, title, body, badge, data = {}) {
 }
 
 
+exports.ajouterUnConteneur = (req, res) => {
+  
+    console.log(req);
+}
+
 exports.avoirLesAnnonces = async (req, res) => {
   const startAt = req.body.startAt ? req.body.startAt : 0;
 
