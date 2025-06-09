@@ -79,10 +79,11 @@ exports.addCity = (req, res) => {
 
 exports.getCities = (req, res) => {
   
-  
+    const value = req.body.active === "kilos" ? "k" : "c"; 
+    
     City.find().then((cities) => {
       
-      res.status(200).json({status: 0, cities});
+      res.status(200).json({status: 0, cities, status: {$in: [value]}});
       
         
     }, (err) => {
@@ -93,7 +94,7 @@ exports.getCities = (req, res) => {
 
 exports.getCitiesByCountryId = (req, res) => {
   
-    //console.log(req.body)
+    console.log(req.body)
   
     City.find({country_id: req.body._id}).then((cities) => {
       
