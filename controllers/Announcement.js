@@ -759,6 +759,8 @@ exports.addAnnouncementWithPdf = async (req, res) => {
     pieds: req.body.pieds,
     description: req.body.description,
     userId: req.auth.userId,
+    fileName: req.body.fileName, 
+    fileType: req.body.fileType,
     status: "container",
     date: new Date(),
     active: false,
@@ -857,6 +859,7 @@ exports.addAnnouncement = (req, res) => {
       status: req.body.status,
       date: new Date(), // Date actuelle
       active: true,
+      devise: req.body.devise,
       priceKilo: req.body.priceKilo || null, // Par défaut à null si non fourni
       coords: req.body.coords || null,
     });
