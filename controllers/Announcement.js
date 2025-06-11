@@ -818,6 +818,8 @@ exports.addAnnouncementWithImages = (req, res) => {
     description: req.body.description,
     userId: req.auth.userId,
     status: "container",
+    fileName: req.body.fileName, 
+    fileType: req.body.fileType,
     date: new Date(),
     active: false,
     coords: coords,
