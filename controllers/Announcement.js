@@ -74,7 +74,28 @@ async function sendPushNotification(token, title, body, badge, data = {}) {
   }
 }
 
+exports.modifierUneAnnonceKilo = (req, res) => {
+  
+    try{
+      
+          let body = req.body; 
+          const {_id} = req.body; 
 
+          delete body._id; 
+
+          Announcement.updateOne({_id}, {$set: body}); 
+
+          res.status(200).json({status: 0, message: 1}); 
+      
+      
+    }catch(err){
+      
+        console.log(err); 
+        res.status(500).json({err  })
+    }
+  
+    
+}
 exports.ajouterUnConteneur = (req, res) => {
   
     console.log(req.body);

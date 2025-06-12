@@ -24,6 +24,7 @@ router.get("/getconversionrate", auth, announcementCtrl.getConversionRate)
 router.post("/updateactivecontainer", auth, announcementCtrl.toggleActiveStatus); 
 router.post("/avoirlesannonces", announcementCtrl.avoirLesAnnonces);
 router.post("/ajouterunconteneur", auth, multer2,  announcementCtrl.addAnnouncementWithImages);
+router.post("/modifierkilo", auth, announcementCtrl.modifierUneAnnonceKilo);
 
 module.exports = router; 
 
