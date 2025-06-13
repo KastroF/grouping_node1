@@ -61,13 +61,17 @@ module.exports = function (io) {
         const mess = await Message.countDocuments({ user2Id: receiverId, read: false });
         const badge = await Notification.countDocuments({ receiverId, view: false });
         const finalBadge = mess + badge;
+        
+        console.log(userr.fcmToken);
 
         for (let token of userr.fcmToken || []) {
-          await sendPushNotification(token.fcmToken, sender.name, message.text, finalBadge, {
+         /* await sendPushNotification(token.fcmToken, sender.name, message.text, finalBadge, {
             status: "5",
             senderId: socket.userId,
             badge: `${finalBadge}`,
-          });
+          });*/
+          
+        
         }
 
         io.to(roomId).emit("messageStatusUpdate", {
