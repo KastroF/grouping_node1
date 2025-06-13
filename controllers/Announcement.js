@@ -828,6 +828,8 @@ exports.addAnnouncementWithPdf = async (req, res) => {
 
 exports.modifierAnnonceImage = async (req, res) => {
   
+      console.log("On se concentre", req.body);
+  
       try{
         
               if (!req.files || !Array.isArray(req.files)) {
