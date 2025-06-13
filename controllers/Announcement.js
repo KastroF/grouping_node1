@@ -834,6 +834,7 @@ exports.modifierAnnonceImage = async (req, res) => {
   
       try{
                console.log("On se concentre", req.body);
+                console.log(req.file);
                console.log("Yes");
               if (!req.files || !Array.isArray(req.files)) {
                 return res.status(400).json({ error: "Aucun fichier téléchargé" });
@@ -846,17 +847,22 @@ exports.modifierAnnonceImage = async (req, res) => {
         
               
         
-            if(req.body.fileType === "application/pdf"){
+            if(req.file){
               
-              for (let file of req.files) {
-                draft.push(`${req.protocol}s://${req.get("host")}/pdf_documents/${file.filename}`);
-              } 
+              console.log("On y est");
+              
+                draft.push(`${req.protocol}s://${req.get("host")}/pdf_documents/${req.file.filename}`);
+               
               
             }else{
+              
+                  console.log("On y est pas");
               
               for (let file of req.files) {
                 draft.push(`${req.protocol}s://${req.get("host")}/images/${file.filename}`);
               }
+              
+              
               
             }
 
