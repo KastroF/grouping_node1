@@ -477,6 +477,8 @@ exports.getAnnoncee = async (req, res) => {
       annonce.views = annonce.views ? annonce.views + 1 : 1;
       console.log("On a fait notre taff");
     }
+    
+    
 
     annonce.startCity2 = await City.findOne({ name: annonce.startCity });
     annonce.endCity2 = await City.findOne({ name: annonce.endCity });
