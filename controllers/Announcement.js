@@ -98,6 +98,8 @@ exports.modifierUneAnnonceKilo = async (req, res) => {
   
     
 }
+
+
 exports.ajouterUnConteneur = (req, res) => {
   
     console.log(req.body);
@@ -813,7 +815,32 @@ exports.addAnnouncementWithPdf = async (req, res) => {
       console.log(err); 
       
   }
-};
+}; 
+
+exports.modifierAnnonceImage = async (req, res) => {
+  
+      try{
+        
+        
+      }catch(err){
+        
+          console.log(err); 
+          res.status(505).json()
+      }
+  
+      if (!req.files || !Array.isArray(req.files)) {
+        return res.status(400).json({ error: "Aucun fichier téléchargé" });
+      }
+
+      // console.log(req.files);
+      //console.log(req.body);
+
+      let draft = [];
+
+      for (let file of req.files) {
+        draft.push(`${req.protocol}s://${req.get("host")}/images/${file.filename}`);
+      }
+}
 
 exports.addAnnouncementWithImages = (req, res) => {
   // Vérification que req.files existe et est un tableau
