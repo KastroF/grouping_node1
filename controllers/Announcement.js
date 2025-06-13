@@ -828,10 +828,11 @@ exports.addAnnouncementWithPdf = async (req, res) => {
 
 exports.modifierAnnonceImage = async (req, res) => {
   
-      console.log("On se concentre", req.body);
+     
   
       try{
-        
+               console.log("On se concentre", req.body);
+               console.log("Yes");
               if (!req.files || !Array.isArray(req.files)) {
                 return res.status(400).json({ error: "Aucun fichier téléchargé" });
             }
@@ -840,13 +841,29 @@ exports.modifierAnnonceImage = async (req, res) => {
             //console.log(req.body);
 
             let draft = [];
-
-            for (let file of req.files) {
-              draft.push(`${req.protocol}s://${req.get("host")}/images/${file.filename}`);
-            } 
         
+              console.log(req.body.fileType);
+        
+            if(req.body.fileType == "application/pdf"){
+              
+              for (let file of req.files) {
+                draft.push(`${req.protocol}s://${req.get("host")}/pdf_documents/${file.filename}`);
+              } 
+              
+            }else{
+              
+              for (let file of req.files) {
+                draft.push(`${req.protocol}s://${req.get("host")}/images/${file.filename}`);
+              }
+              
+            }
+
+
+        
+            console.log(draft);
             let body = req.body; 
             const {_id} = req.body; 
+           
         
             body = {...body, active: false, draft, modifyDate: new Date()}
         
