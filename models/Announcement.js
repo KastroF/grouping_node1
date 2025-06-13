@@ -24,7 +24,8 @@ const AnnouncementSchema = mongoose.Schema({
     read: {type: Boolean, default: false}, 
     devise: {type: String}, 
     fileName: {type: String}, 
-    fileType: {type: String}
+    fileType: {type: String}, 
+    modifyDate: {type: Date}
     
     
 })

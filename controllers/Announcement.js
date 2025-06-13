@@ -446,7 +446,7 @@ exports.getAnnoncee = async (req, res) => {
 
     console.log("On se comprend");
 
-    const annonce = await Announcement.findOne({ _id: req.body.id });
+    const annonce = await Announcement.findOne({ _id: req.body.id, active: true });
 
     console.log(req.body.phoneId);
     
@@ -848,7 +848,7 @@ exports.modifierAnnonceImage = async (req, res) => {
             let body = req.body; 
             const {_id} = req.body; 
         
-            body = {...body, active: false, draft}
+            body = {...body, active: false, draft, modifyDate: new Date()}
         
             console.log("le body", body);
         
