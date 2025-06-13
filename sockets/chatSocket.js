@@ -65,11 +65,11 @@ module.exports = function (io) {
         console.log(userr.fcmToken);
 
         for (let token of userr.fcmToken || []) {
-         /* await sendPushNotification(token.fcmToken, sender.name, message.text, finalBadge, {
+          await sendPushNotification(token.fcmToken, sender.name, message.text, finalBadge, {
             status: "5",
             senderId: socket.userId,
             badge: `${finalBadge}`,
-          });*/
+          });
           
         
         }
