@@ -25,7 +25,9 @@ router.post("/updateactivecontainer", auth, announcementCtrl.toggleActiveStatus)
 router.post("/avoirlesannonces", announcementCtrl.avoirLesAnnonces);
 router.post("/ajouterunconteneur", auth, multer2,  announcementCtrl.addAnnouncementWithImages);
 router.post("/modifierannonceimg", auth, multer2, announcementCtrl.modifierAnnonceImage)
+router.post("/modifierannoncepdf", auth, multer, announcementCtrl.modifierAnnonceImage)
 router.post("/modifierkilo", auth, announcementCtrl.modifierUneAnnonceKilo);
+
 
 module.exports = router; 
 
