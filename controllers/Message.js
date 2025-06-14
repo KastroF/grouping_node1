@@ -170,6 +170,15 @@ exports.addMessageWithImage = (req, res) => {
      // console.log(req.body);
     const url = `${req.protocol}s://${req.get("host")}/images/${req.files[0].filename}`
     
+    const newMessage = new Message({
+        url, 
+        type: "image", 
+        user1Id: req.body.user1,
+        user2Id: req.body.user2,
+        date: new Date()
+    })
+    
+    await newMessage
   
   }catch(err){
     

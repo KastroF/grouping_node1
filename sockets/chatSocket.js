@@ -36,7 +36,7 @@ module.exports = function (io) {
       console.log(`➡️ ${socket.userId} a rejoint ${roomId1}`);
     });
 
-    socket.on("sendMessage", async ({ roomId1, receiverId, message, user1 }) => {
+    socket.on("sendMessage", async ({ roomId1, receiverId, message, user1, id }) => {
       const roomId = roomId1;
       const receiverSocketId = connectedUsers.get(receiverId);
 
@@ -50,11 +50,16 @@ module.exports = function (io) {
       io.to(roomId).emit("messageReceived", temporaryMessage);
 
       try {
-        const savedMessage = await addMessageweb({
-          senderId: socket.userId,
-          receiverId,
-          text: message.text,
-        });
+        
+        if(!id){
+           
+           const savedMessage = await addMessageweb({
+                  senderId: socket.userId,
+                receiverId,
+                text: message.text,
+              });
+          }
+       
 
         const sender = await User.findById(message.sender);
         const userr = await User.findById(receiverId);
