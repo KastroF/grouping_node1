@@ -22,6 +22,10 @@ async function sendPushNotification(token, title, body, badge, data = {}) {
       token,
       notification: { title, body },
       apns: {
+        headers: {
+          "apns-priority": "10",
+          "apns-push-type": "alert"
+        },
         payload: { aps: { alert: { title, body }, badge, sound: "default" } }
       },
       data,
