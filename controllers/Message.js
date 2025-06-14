@@ -174,6 +174,8 @@ exports.addMessageWithImage = (req, res) => {
     }
   
   
+  res.status(201).json({status: 0});
+  
     
 }
 
