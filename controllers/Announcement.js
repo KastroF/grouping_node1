@@ -1275,34 +1275,62 @@ exports.moreAnnouncements = async (req, res) => {
   }
 };
 
-/*
 exports.getAnnonces = async (req, res) => {
   try {
     const currentDate = new Date();
     const limit = req.body.three ? 3 : 60;
-    console.log("Current Date:", currentDate);
-    console.log("limit", limit);
 
-    // Récupérer les annonces de conteneurs et de kilos
-    const containers = await Announcement.find({
-      active: true,
-      status: "container",
-      dateOfDeparture: { $gte: currentDate },
-    })
-      .sort({ date: -1 })
-      .limit(limit);
+    // -----------------------------
+    // 1) Récupérer les containers avec l'utilisateur
+    // -----------------------------
+    const containers = await Announcement.aggregate([
+      {
+        $match: {
+          active: true,
+          status: "container",
+          dateOfDeparture: { $gte: currentDate },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $sort: { date: -1 } },
+      { $limit: limit },
+    ]);
 
-    console.log("Containers found:", containers);
+    // -----------------------------
+    // 2) Récupérer les kilos avec l'utilisateur
+    // -----------------------------
+    const kilos = await Announcement.aggregate([
+      {
+        $match: {
+          active: true,
+          status: "kilos",
+          dateOfDeparture: { $gte: currentDate },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $sort: { date: -1 } },
+      { $limit: limit },
+    ]);
 
-    const kilos = await Announcement.find({
-      active: true,
-      status: "kilos",
-      dateOfDeparture: { $gte: currentDate },
-    })
-      .sort({ date: -1 })
-      .limit(limit);
-
-    // Récupérer toutes les villes nécessaires
+    // -----------------------------
+    // 3) Récupérer toutes les villes nécessaires en 1 requête
+    // -----------------------------
     const cityNames = [
       ...new Set([
         ...containers.map((c) => c.startCity),
@@ -1315,48 +1343,72 @@ exports.getAnnonces = async (req, res) => {
     const cities = await City.find({ name: { $in: cityNames } });
     const cityMap = new Map(cities.map((city) => [city.name, city]));
 
-    // Ajouter les informations de ville aux conteneurs et kilos
-    containers.forEach((container) => {
-      container.startCity2 = cityMap.get(container.startCity);
-      container.endCity2 = cityMap.get(container.endCity);
-    });
+    const enrichCities = (annonces) =>
+      annonces.map((a) => ({
+        ...a,
+        startCity2: cityMap.get(a.startCity) || null,
+        endCity2: cityMap.get(a.endCity) || null,
+      }));
 
-    kilos.forEach((kilo) => {
-      kilo.startCity2 = cityMap.get(kilo.startCity);
-      kilo.endCity2 = cityMap.get(kilo.endCity);
+    // -----------------------------
+    // 4) Répondre avec les données traitées
+    // -----------------------------
+    res.status(200).json({
+      status: 0,
+      containers: enrichCities(containers),
+      kilos: enrichCities(kilos),
     });
-
-    // Répondre avec les données traitées
-    res.status(200).json({ status: 0, kilos, containers });
   } catch (err) {
+    console.log(err);
     res.status(500).json({ error: err.message });
   }
 };
 
+
+
 exports.getAnnonce = async (req, res) => {
   try {
-    //console.log(req.body)
+    const { id } = req.body;
 
-    const annonce = await Announcement.findOne({ _id: req.body.id });
+    // 🔹 1) Récupérer l'annonce avec l'utilisateur
+    const annonceResult = await Announcement.aggregate([
+      { $match: { _id: new ObjectId(id) } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+    ]);
 
-    annonce.startCity2 = await City.findOne({ name: annonce.startCity });
-    annonce.endCity2 = await City.findOne({ name: annonce.endCity });
+    if (!annonceResult.length) {
+      return res.status(404).json({ status: 1, message: "Annonce non trouvée" });
+    }
 
-    //console.log(annonce);
+    const annonce = annonceResult[0];
 
-    const userObjectId = new ObjectId(annonce.userId);
+    // 🔹 2) Récupérer les villes en une seule requête
+    const cityNames = [annonce.startCity, annonce.endCity];
+    const cities = await City.find({ name: { $in: cityNames } }).lean();
+    const cityMap = new Map(cities.map((c) => [c.name, c]));
 
-    const user = await User.findOne({ _id: annonce.userId });
+    annonce.startCity2 = cityMap.get(annonce.startCity) || null;
+    annonce.endCity2 = cityMap.get(annonce.endCity) || null;
 
+    // 🔹 3) Compter toutes les annonces actives de l'utilisateur
     const sum = await Announcement.countDocuments({
-      userId: user._id,
+      userId: annonce.user._id,
       active: true,
     });
 
-    res.status(200).json({ status: 0, annonce, sum, user });
+    // 🔹 4) Réponse
+    res.status(200).json({ status: 0, annonce, sum, user: annonce.user });
   } catch (e) {
     console.log(e);
-    res.status(505).json({ e });
+    res.status(500).json({ e });
   }
 };
 
@@ -1379,107 +1431,155 @@ function monthNameToNumber(monthName) {
   const monthIndex = monthNames.indexOf(monthName.toLowerCase());
   return monthIndex >= 0 ? monthIndex + 1 : null;
 }
-
 exports.annoncesRecherche = async (req, res) => {
-  console.log(req.body);
-  
-  console.log("est ce que tu t'en rend compte ?")
-
-  // console.log(monthNameToNumber(req.body.month))
-
-  let month = monthNameToNumber(req.body.month);
-  let year = req.body.year;
-
-  let startDate;
-
-  console.log("le mois", new Date().getMonth());
-
-  if (
-    year === new Date().getFullYear() &&
-    month - 1 === new Date().getMonth()
-  ) {
-    startDate = new Date();
-  } else {
-    startDate = new Date(year, month - 1, 1);
-  }
-
-  const endDate = new Date(year, month, 1);
-
   try {
+    const { start, end, month: monthName, year, type, startAt = 0 } = req.body;
+    const userId = req.auth.userId;
+
+    // Convertir le nom du mois en numéro
+    const month = monthNameToNumber(monthName);
+
+    // Déterminer la date de début
+    let startDate;
+    const currentDate = new Date();
+    if (year === currentDate.getFullYear() && month - 1 === currentDate.getMonth()) {
+      startDate = currentDate;
+    } else {
+      startDate = new Date(year, month - 1, 1);
+    }
+
+    const endDate = new Date(year, month, 1);
+
+    // -----------------------------
+    // 1) Compter les annonces
+    // -----------------------------
     const annoncesCount = await Announcement.countDocuments({
-      startCity: req.body.start,
-      endCity: req.body.end,
-      dateOfDeparture: {
-        $gte: startDate,
-        $lt: endDate,
-      },
-      status: req.body.type,
+      startCity: start,
+      endCity: end,
+      status: type,
       active: true,
+      dateOfDeparture: { $gte: startDate, $lt: endDate },
     });
 
-    const annonces = await Announcement.find({
-      startCity: req.body.start,
-      endCity: req.body.end,
-      dateOfDeparture: {
-        $gte: startDate,
-        $lt: endDate,
+    // -----------------------------
+    // 2) Récupérer les annonces avec utilisateur
+    // -----------------------------
+    const annonces = await Announcement.aggregate([
+      {
+        $match: {
+          startCity: start,
+          endCity: end,
+          status: type,
+          active: true,
+          dateOfDeparture: { $gte: startDate, $lt: endDate },
+        },
       },
-      status: req.body.type,
-      active: true,
-    })
-      .sort({ date: 1 })
-      .skip(req.body.startAt)
-      .limit(10);
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $sort: { date: 1 } },
+      { $skip: parseInt(startAt) },
+      { $limit: 10 },
+    ]);
 
-    for (let kilo of annonces) {
-      kilo.startCity2 = await City.findOne({ name: kilo.startCity });
-      kilo.endCity2 = await City.findOne({ name: kilo.endCity });
-    }
-    
-    if(annonces.length === 0){
-      
-        const newSearch = Search({
-           startCity: req.body.start,
-            endCity: req.body.end,
-            month,
-            year,
-            status: req.body.type,
-            userId: req.auth.userId, 
-            date: new Date()
-        })
-        
-        await newSearch.save();
+    // -----------------------------
+    // 3) Récupérer les villes en une seule requête
+    // -----------------------------
+    const cityNames = [
+      ...new Set(
+        annonces.flatMap(a => [a.startCity, a.endCity])
+      ),
+    ];
+
+    const cities = await City.find({ name: { $in: cityNames } }).lean();
+    const cityMap = new Map(cities.map(c => [c.name, c]));
+
+    const enrichedAnnonces = annonces.map(a => ({
+      ...a,
+      startCity2: cityMap.get(a.startCity) || null,
+      endCity2: cityMap.get(a.endCity) || null,
+    }));
+
+    // -----------------------------
+    // 4) Créer un Search si aucune annonce
+    // -----------------------------
+    if (enrichedAnnonces.length === 0) {
+      const newSearch = new Search({
+        startCity: start,
+        endCity: end,
+        month,
+        year,
+        status: type,
+        userId,
+        date: new Date(),
+      });
+      await newSearch.save();
     }
 
+    // -----------------------------
+    // 5) Réponse finale
+    // -----------------------------
     res.status(200).json({
       status: 0,
-      annonces,
+      annonces: enrichedAnnonces,
       count: annoncesCount,
-      startAt: annonces.length === 10 ? parseInt(req.body.startAt) + 10 : null,
+      startAt: enrichedAnnonces.length === 10 ? parseInt(startAt) + 10 : null,
     });
 
-    //console.log(annonces);
   } catch (e) {
     console.log(e);
-    res.status(505).json({ e });
+    res.status(500).json({ e });
   }
 };
+
 
 //version admin
 
 exports.getValidAnnouncements = async (req, res) => {
   try {
-    // Récupérer la date actuelle
     const currentDate = new Date();
 
-    // Trouver toutes les annonces avec une date de départ valide
-    const validAnnouncements = await Announcement.find({
-      dateOfDeparture: { $gt: currentDate }, // Filtrer les annonces avec une date de départ future
-    });
+    // 🔹 1) Récupérer les annonces valides avec l'utilisateur
+    const validAnnouncements = await Announcement.aggregate([
+      { $match: { dateOfDeparture: { $gt: currentDate } } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user",
+        },
+      },
+      { $unwind: "$user" },
+      { $sort: { dateOfDeparture: 1 } }, // trie par date de départ croissante
+    ]);
 
+    // 🔹 2) Récupérer les villes en une seule requête
+    const cityNames = [
+      ...new Set(
+        validAnnouncements.flatMap(a => [a.startCity, a.endCity])
+      ),
+    ];
+
+    const cities = await City.find({ name: { $in: cityNames } }).lean();
+    const cityMap = new Map(cities.map(c => [c.name, c]));
+
+    const enrichedAnnouncements = validAnnouncements.map(a => ({
+      ...a,
+      startCity2: cityMap.get(a.startCity) || null,
+      endCity2: cityMap.get(a.endCity) || null,
+    }));
+
+    // 🔹 3) Réponse
     res.status(200).json({
       status: 0,
-      announcements: validAnnouncements,
+      announcements: enrichedAnnouncements,
       message: "Annonces valides récupérées avec succès",
     });
   } catch (error) {
@@ -1494,6 +1594,7 @@ exports.getValidAnnouncements = async (req, res) => {
     });
   }
 };
+
 
 exports.getFalseContainer = async (req, res) => {
   try {
@@ -1586,8 +1687,6 @@ exports.getConversionRate = async (req, res) => {
   }
 };
 
-
-*/
 exports.toggleActiveStatus = async (req, res) => {
   try {
     const { id } = req.body;
