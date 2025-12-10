@@ -108,6 +108,8 @@ exports.ajouterUnConteneur = (req, res) => {
 }
 
 exports.avoirLesAnnonces = async (req, res) => {
+
+  console.log("On body bag", req.body)
   const startAt = req.body.startAt ? parseInt(req.body.startAt) : 0;
 
   try {
@@ -1124,14 +1126,10 @@ exports.moreAnnouncements = async (req, res) => {
     console.log(e);
     res.status(505).son({ e });
   }
-};
-
-exports.getAnnonces = async (req, res) => {
+};exports.getAnnonces = async (req, res) => {
   try {
     const currentDate = new Date();
     const limit = req.body.three ? 3 : 60;
-    console.log("Current Date:", currentDate);
-    console.log("limit", limit);
 
     // Récupérer les annonces de conteneurs et de kilos
     const containers = await Announcement.find({
@@ -1141,8 +1139,6 @@ exports.getAnnonces = async (req, res) => {
     })
       .sort({ date: -1 })
       .limit(limit);
-
-    console.log("Containers found:", containers);
 
     const kilos = await Announcement.find({
       active: true,
@@ -1155,33 +1151,47 @@ exports.getAnnonces = async (req, res) => {
     // Récupérer toutes les villes nécessaires
     const cityNames = [
       ...new Set([
-        ...containers.map((c) => c.startCity),
-        ...containers.map((c) => c.endCity),
-        ...kilos.map((k) => k.startCity),
-        ...kilos.map((k) => k.endCity),
+        ...containers.map(c => c.startCity),
+        ...containers.map(c => c.endCity),
+        ...kilos.map(k => k.startCity),
+        ...kilos.map(k => k.endCity),
       ]),
     ];
+    const cities = await City.find({ name: { $in: cityNames } }).lean();
+    const cityMap = new Map(cities.map(c => [c.name, c]));
 
-    const cities = await City.find({ name: { $in: cityNames } });
-    const cityMap = new Map(cities.map((city) => [city.name, city]));
-
-    // Ajouter les informations de ville aux conteneurs et kilos
-    containers.forEach((container) => {
-      container.startCity2 = cityMap.get(container.startCity);
-      container.endCity2 = cityMap.get(container.endCity);
+    // Ajouter les informations de ville
+    containers.forEach(c => {
+      c.startCity2 = cityMap.get(c.startCity) || null;
+      c.endCity2 = cityMap.get(c.endCity) || null;
+    });
+    kilos.forEach(k => {
+      k.startCity2 = cityMap.get(k.startCity) || null;
+      k.endCity2 = cityMap.get(k.endCity) || null;
     });
 
-    kilos.forEach((kilo) => {
-      kilo.startCity2 = cityMap.get(kilo.startCity);
-      kilo.endCity2 = cityMap.get(kilo.endCity);
+    // Récupérer les utilisateurs en parallèle
+    const allUserIds = [
+      ...new Set([...containers.map(c => c.userId), ...kilos.map(k => k.userId)])
+    ];
+    const users = await User.find({ _id: { $in: allUserIds } }).lean();
+    const userMap = new Map(users.map(u => [u._id.toString(), u]));
+
+    containers.forEach(c => {
+      c.user = userMap.get(c.userId) || null;
+    });
+    kilos.forEach(k => {
+      k.user = userMap.get(k.userId) || null;
     });
 
-    // Répondre avec les données traitées
+    // Réponse
     res.status(200).json({ status: 0, kilos, containers });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
+
 
 exports.getAnnonce = async (req, res) => {
   try {
