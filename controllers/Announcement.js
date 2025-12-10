@@ -1126,16 +1126,15 @@ exports.moreAnnouncements = async (req, res) => {
     console.log(e);
     res.status(505).son({ e });
   }
-};exports.getAnnonces = async (req, res) => {
-
-  console.log("On body bag", req.body); 
+};
 
 
+exports.getAnnonces = async (req, res) => {
   try {
     const currentDate = new Date();
     const limit = req.body.three ? 3 : 60;
 
-    // Récupérer les annonces de conteneurs et de kilos
+    // 1️⃣ Récupérer les annonces de conteneurs et de kilos
     const containers = await Announcement.find({
       active: true,
       status: "container",
@@ -1152,7 +1151,7 @@ exports.moreAnnouncements = async (req, res) => {
       .sort({ date: -1 })
       .limit(limit);
 
-    // Récupérer toutes les villes nécessaires
+    // 2️⃣ Récupérer toutes les villes nécessaires
     const cityNames = [
       ...new Set([
         ...containers.map(c => c.startCity),
@@ -1164,7 +1163,6 @@ exports.moreAnnouncements = async (req, res) => {
     const cities = await City.find({ name: { $in: cityNames } }).lean();
     const cityMap = new Map(cities.map(c => [c.name, c]));
 
-    // Ajouter les informations de ville
     containers.forEach(c => {
       c.startCity2 = cityMap.get(c.startCity) || null;
       c.endCity2 = cityMap.get(c.endCity) || null;
@@ -1174,13 +1172,14 @@ exports.moreAnnouncements = async (req, res) => {
       k.endCity2 = cityMap.get(k.endCity) || null;
     });
 
-    // Récupérer les utilisateurs en parallèle
+    // 3️⃣ Récupérer tous les utilisateurs des annonces
     const allUserIds = [
       ...new Set([...containers.map(c => c.userId), ...kilos.map(k => k.userId)])
     ];
     const users = await User.find({ _id: { $in: allUserIds } }).lean();
     const userMap = new Map(users.map(u => [u._id.toString(), u]));
 
+    // 4️⃣ Ajouter l'utilisateur à chaque annonce
     containers.forEach(c => {
       c.user = userMap.get(c.userId) || null;
     });
@@ -1188,8 +1187,7 @@ exports.moreAnnouncements = async (req, res) => {
       k.user = userMap.get(k.userId) || null;
     });
 
-    console.log(containers);
-    // Réponse
+    // 5️⃣ Répondre avec les annonces enrichies
     res.status(200).json({ status: 0, kilos, containers });
   } catch (err) {
     console.error(err);
