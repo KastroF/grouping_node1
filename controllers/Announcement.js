@@ -1182,7 +1182,7 @@ exports.getAnnonces = async (req, res) => {
     const users = await User.find({ _id: { $in: allUserIds } }).lean();
 
     console.log(users);
-    
+
     const userMap = new Map(users.map(u => [u._id.toString(), u]));
 
     // 4️⃣ Ajouter l'utilisateur à chaque annonce
@@ -1192,6 +1192,8 @@ exports.getAnnonces = async (req, res) => {
     kilos.forEach(k => {
       k.user = userMap.get(k.userId) || null;
     });
+
+    console.log(containers);
 
     // 5️⃣ Répondre avec les annonces enrichies
     res.status(200).json({ status: 0, kilos, containers });
