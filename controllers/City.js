@@ -93,7 +93,9 @@ exports.getCities = (req, res) => {
 
 exports.getCitiesByCountryId = (req, res) => {
   
-    console.log(req.body)
+    
+  console.log(req.body)
+  
   const value = req.body.active === "kilos" ? "k" : "c"; 
     
   
