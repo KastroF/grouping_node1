@@ -1127,6 +1127,10 @@ exports.moreAnnouncements = async (req, res) => {
     res.status(505).son({ e });
   }
 };exports.getAnnonces = async (req, res) => {
+
+  console.log("On body bag", req.body); 
+
+
   try {
     const currentDate = new Date();
     const limit = req.body.three ? 3 : 60;
@@ -1184,6 +1188,7 @@ exports.moreAnnouncements = async (req, res) => {
       k.user = userMap.get(k.userId) || null;
     });
 
+    console.log(containers);
     // Réponse
     res.status(200).json({ status: 0, kilos, containers });
   } catch (err) {
