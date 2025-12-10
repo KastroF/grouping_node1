@@ -13,6 +13,7 @@ const AnnouncementSchema = mongoose.Schema({
     description: {type: String}, 
     pieds: {type: Number},
     userId: {type: String}, 
+    user: {type: Object},
     draft: {type: Array},
     status: {type: String}, 
     date: {type: Date}, 
