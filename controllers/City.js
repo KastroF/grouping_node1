@@ -94,8 +94,10 @@ exports.getCities = (req, res) => {
 exports.getCitiesByCountryId = (req, res) => {
   
     
-  console.log(req.body)
-  
+  console.log(req.body); 
+
+
+/*
   const value = req.body.active === "kilos" ? "k" : "c"; 
     
   
@@ -110,5 +112,5 @@ exports.getCitiesByCountryId = (req, res) => {
       console.log(err)
       
         res.status(505).json({err})
-    })
+    }) */
 }
