@@ -101,18 +101,31 @@ module.exports = function chatSocket(io) {
         });
 
         // 4) Push notif FCM
+        console.log("PUSH step 1: find sender", senderId);
         const sender = await User.findById(senderId);
+        
+        console.log("PUSH step 2: find receiver", receiverIdStr);
         const receiver = await User.findById(receiverIdStr);
-
+        
+        console.log("PUSH step 3: count unread messages");
         const unreadMessages = await Message.countDocuments({ user2Id: receiverIdStr, read: false });
+        
+        console.log("PUSH step 4: count unread notifications");
         const unreadNotifications = await Notification.countDocuments({ receiverId: receiverIdStr, view: false });
+        
         const finalBadge = unreadMessages + unreadNotifications;
-
+        console.log("PUSH step 5: finalBadge =", finalBadge);
+        
+        console.log("PUSH step 6: receiver.fcmToken =", receiver?.fcmToken);
+        
         const tokens = (receiver?.fcmToken || [])
           .map((t) => (typeof t === "string" ? t : t?.fcmToken))
           .filter(Boolean);
-
+        
+        console.log("PUSH step 7: tokens count =", tokens.length, tokens);
+        
         for (const t of tokens) {
+          console.log("PUSH step 8: sending to", t.slice(0, 12), "...");
           await sendPushNotification(
             t,
             sender?.name || "Nouveau message",
@@ -121,6 +134,8 @@ module.exports = function chatSocket(io) {
             { status: "5", senderId, badge: String(finalBadge) }
           );
         }
+        console.log("PUSH step 9: done");
+        
 
         // 5) Notification socket directe si receiver online
         const receiverSocketId = connectedUsers.get(receiverIdStr);
