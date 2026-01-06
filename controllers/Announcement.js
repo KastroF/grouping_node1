@@ -1287,6 +1287,7 @@ function monthNameToNumber(monthName) {
   return monthIndex >= 0 ? monthIndex + 1 : null;
 }
 
+/*
 exports.annoncesRecherche = async (req, res) => {
   console.log(req.body);
   
@@ -1370,8 +1371,8 @@ exports.annoncesRecherche = async (req, res) => {
     console.log(e);
     res.status(505).json({ e });
   }
-};
-
+}; 
+*/
 //version admin
 
 exports.getValidAnnouncements = async (req, res) => {
