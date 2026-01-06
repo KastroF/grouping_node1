@@ -9,14 +9,13 @@ const { sendPushNotification } = require("../utils/fcm");
 const connectedUsers = new Map();
 
 module.exports = function chatSocket(io) {
-  // ✅ Auth JWT sur chaque connexion Socket.IO
   io.use((socket, next) => {
     const token = socket.handshake.auth?.token;
     if (!token) return next(new Error("Token manquant"));
 
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (err) return next(new Error("Token invalide"));
-      socket.userId = decoded.userId;
+      socket.userId = String(decoded.userId);
       next();
     });
   });
@@ -25,147 +24,118 @@ module.exports = function chatSocket(io) {
     console.log(`✅ ${socket.userId} connecté`);
     connectedUsers.set(socket.userId, socket.id);
 
-    // 🔔 Presence (Map -> Array)
     socket.broadcast.emit("userStatusChanged", {
       userId: socket.userId,
       status: "online",
       usersConnected: Array.from(connectedUsers.keys()),
     });
 
-    // ✅ Join room
     socket.on("joinRoom", ({ roomId1 }) => {
       if (!roomId1) return;
       socket.join(roomId1);
       console.log(`➡️ ${socket.userId} a rejoint ${roomId1}`);
     });
 
-    /**
-     * ✅ Send message
-     * - pending -> uniquement au sender (socket.emit)
-     * - sent -> à la room (io.to(roomId).emit)
-     * - update pending -> uniquement au sender via messageStatusUpdate (propre avec clientId)
-     */
-    socket.on(
-      "sendMessage",
-      async ({ roomId1, receiverId, message, user1, url, id, clientId }) => {
-        const roomId = roomId1;
-        if (!roomId || !receiverId) return;
+    socket.on("sendMessage", async ({ roomId1, receiverId, message, user1, url, id, clientId }) => {
+      const roomId = roomId1;
+      if (!roomId || !receiverId) return;
 
-        // clientId stable pour matcher pending -> sent côté RN
-        const safeClientId = clientId || `${Date.now()}`;
+      const safeClientId = clientId || `${Date.now()}`;
+      const senderId = String(socket.userId);
+      const receiverIdStr = String(receiverId);
 
-        // sécurité: ne jamais faire confiance à message.sender venant du client
-        const senderId = socket.userId;
+      const text = message?.text ? String(message.text) : "";
 
-        // normaliser texte: image => on garde url dans url, et text peut être url (selon ton UI)
-        const text = message?.text || "";
-
-        const pendingMessage = id
-          ? {
-              clientId: safeClientId,
-              text,
-              url,
-              type: "image",
-              date: new Date(),
-              sender: senderId,
-              status: "pending",
-            }
-          : {
-              clientId: safeClientId,
-              text,
-              date: new Date(),
-              sender: senderId,
-              status: "pending",
-            };
-
-        // ✅ pending seulement au sender
-        socket.emit("messageReceived", pendingMessage);
-
-        try {
-          // 1) Save DB
-          const savedMessage = await addMessageweb(
-            {
-              senderId,
-              receiverId,
-              text,
-            },
-            id
-          );
-
-          // 2) Message final (sent)
-          const finalMessage = {
-            ...pendingMessage,
-            _id: savedMessage._id,
-            date: savedMessage.date,
-            status: "sent",
-            sender: savedMessage.senderId,
+      // ✅ pending (toujours sender string)
+      const pendingMessage = id
+        ? {
+            clientId: safeClientId,
+            text,
+            url,
+            type: "image",
+            date: new Date(),
+            sender: senderId,
+            status: "pending",
+          }
+        : {
+            clientId: safeClientId,
+            text,
+            date: new Date(),
+            sender: senderId,
+            status: "pending",
           };
 
-          // ✅ Envoyer le message final à toute la room
-          io.to(roomId).emit("messageReceived", finalMessage);
+      // pending -> seulement au sender
+      socket.emit("messageReceived", pendingMessage);
 
-          // ✅ Update pending -> sent (uniquement au sender) (optionnel mais propre)
-          socket.emit("messageStatusUpdate", {
-            clientId: safeClientId,
-            _id: savedMessage._id,
-            status: "sent",
-            date: savedMessage.date,
-            user1Id: savedMessage.senderId,
-          });
+      try {
+        // 1) Save DB (source of truth: socket.userId)
+        const savedMessage = await addMessageweb(
+          {
+            senderId,
+            receiverId: receiverIdStr,
+            text,
+          },
+          id
+        );
 
-          // 3) Push notif FCM (si tu veux uniquement quand receiver offline: tu peux conditionner sur receiverSocketId)
-          const sender = await User.findById(senderId);
-          const receiver = await User.findById(receiverId);
+        // 2) Message final (sent) -> room
+        const finalMessage = {
+          ...pendingMessage,
+          _id: String(savedMessage._id),
+          date: savedMessage.date || new Date(),
+          status: "sent",
+          sender: String(savedMessage.senderId), // ✅ string
+        };
 
-          const unreadMessages = await Message.countDocuments({
-            user2Id: receiverId,
-            read: false,
-          });
+        io.to(roomId).emit("messageReceived", finalMessage);
 
-          const unreadNotifications = await Notification.countDocuments({
-            receiverId,
-            view: false,
-          });
+        // 3) Update pending -> sent (sender uniquement)
+        socket.emit("messageStatusUpdate", {
+          clientId: safeClientId,
+          _id: String(savedMessage._id),
+          status: "sent",
+          date: finalMessage.date,
+          sender: finalMessage.sender,
+        });
 
-          const finalBadge = unreadMessages + unreadNotifications;
+        // 4) Push notif FCM
+        const sender = await User.findById(senderId);
+        const receiver = await User.findById(receiverIdStr);
 
-          // receiver.fcmToken peut être ["token", ...] ou [{fcmToken:"..."}, ...]
-          const tokens = (receiver?.fcmToken || [])
-            .map((t) => (typeof t === "string" ? t : t?.fcmToken))
-            .filter(Boolean);
+        const unreadMessages = await Message.countDocuments({ user2Id: receiverIdStr, read: false });
+        const unreadNotifications = await Notification.countDocuments({ receiverId: receiverIdStr, view: false });
+        const finalBadge = unreadMessages + unreadNotifications;
 
-          for (const t of tokens) {
-            await sendPushNotification(
-              t,
-              sender?.name || "Nouveau message",
-              id ? "Vous a envoyé une image" : text,
-              finalBadge,
-              {
-                status: "5",
-                senderId,
-                badge: String(finalBadge),
-              }
-            );
-          }
+        const tokens = (receiver?.fcmToken || [])
+          .map((t) => (typeof t === "string" ? t : t?.fcmToken))
+          .filter(Boolean);
 
-          // 4) Notification socket directe (si receiver connecté)
-          const receiverSocketId = connectedUsers.get(receiverId);
-          if (receiverSocketId) {
-            io.to(receiverSocketId).emit("newMessageNotification", {
-              senderId,
-              receiverId: savedMessage.user2Id,
-              message: finalMessage,
-              user: user1,
-            });
-          }
-        } catch (err) {
-          console.error("❌ Enregistrement message:", err);
-          socket.emit("messageError", {
-            error: "Erreur lors de l'envoi du message",
+        for (const t of tokens) {
+          await sendPushNotification(
+            t,
+            sender?.name || "Nouveau message",
+            id ? "Vous a envoyé une image" : text,
+            finalBadge,
+            { status: "5", senderId, badge: String(finalBadge) }
+          );
+        }
+
+        // 5) Notification socket directe si receiver online
+        const receiverSocketId = connectedUsers.get(receiverIdStr);
+        if (receiverSocketId) {
+          io.to(receiverSocketId).emit("newMessageNotification", {
+            senderId,
+            receiverId: receiverIdStr,
+            message: finalMessage,
+            user: user1,
           });
         }
+      } catch (err) {
+        console.error("❌ Enregistrement message:", err);
+        socket.emit("messageError", { error: "Erreur lors de l'envoi du message" });
       }
-    );
+    });
 
     socket.on("disconnect", () => {
       connectedUsers.delete(socket.userId);
