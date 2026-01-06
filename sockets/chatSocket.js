@@ -85,7 +85,8 @@ module.exports = function chatSocket(io) {
           _id: String(savedMessage._id),
           date: savedMessage.date || new Date(),
           status: "sent",
-          sender: String(savedMessage.senderId), // ✅ string
+          sender: String(senderId),   // ✅ au lieu de savedMessage.senderId
+          user1Id: String(senderId),  // ✅ optionnel
         };
 
         io.to(roomId).emit("messageReceived", finalMessage);
