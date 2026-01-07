@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-
+const Contact = require("../models/Contact"); 
 
 const transporter = nodemailer.createTransport({
   host: 'mail.groupingpro.com',
@@ -15,6 +15,48 @@ const transporter = nodemailer.createTransport({
   logger: true,
   debug: true,
 });
+
+ exports.contactUs = async (req, res) => {
+
+    console.log(req.body); 
+
+    const userName = req.body.name; 
+    const userEmail = req.body.mail; 
+    const message = req.body.message; 
+    const object = req.body.object
+
+    try{
+
+      await transporter.sendMail({
+        from: `"Grouping Contact" <noreply@groupingpro.com>`,
+        to: "contacts@groupingpro.com",
+        replyTo: userEmail, // <-- super important
+        subject: `Contact - ${userName}`,
+        html: `
+          <p><b>Nom:</b> ${userName}</p>
+          <p><b>Email:</b> ${userEmail}</p>
+           <p><b>Objet:</b> ${object}</p>
+          <p><b>Message:</b><br/>${message}</p>
+        `,
+      });
+      
+      const contact = new Contact({
+          userId: req.auth.userId, 
+          message, 
+          object
+      })
+
+      await contact.save(); 
+
+      res.status(201).json({status: 0, message: "Votre message nus a été transmis avec succès"});
+
+    }catch(err){
+
+      console.log(err); 
+      res.status(505).json({err  })
+    }
+
+}
 
 const sendHttpUrl = async (email, name) => {
   

@@ -27,5 +27,6 @@ router.post("/changephoto", auth, handleUpload, userCtrl.changePhoto);
 router.post("/changepassword", auth, userCtrl.changePassword);
 router.post("/gotoemail", userCtrl.goToEmail);
 router.post("/updateemail", userCtrl.updateEmail); 
+router.post("/contactus", auth, userCtrl.contactUs)
 
 module.exports = router;
