@@ -79,10 +79,12 @@ module.exports = function chatSocket(io) {
           id
         );
 
+        const dbId = savedMessage?._id ? String(savedMessage._id) : null;
+
         // 2) Message final (sent) -> room
         const finalMessage = {
           ...pendingMessage,
-          _id: String(savedMessage._id),
+          _id: dbId,  
           date: savedMessage.date || new Date(),
           status: "sent",
           sender: String(senderId),   // ✅ au lieu de savedMessage.senderId
