@@ -17,6 +17,8 @@ const transporter = nodemailer.createTransport({
 const sendHttpUrl = async (email, name) => {
   
   const encodedEmail = encodeURIComponent(email);
+
+  console.log("le code email", encodedEmail); 
   
 
   try {
