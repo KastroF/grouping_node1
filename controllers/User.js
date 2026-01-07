@@ -11,7 +11,9 @@ const transporter = nodemailer.createTransport({
   auth: {
     user: 'noreply@groupingpro.com',         // Remplace par ton Gmail
     pass: 'wS6-99$EexrqjcM'  // Active le mot de passe d’application si 2FA est activée
-  }
+  }, 
+  logger: true,
+  debug: true,
 });
 
 const sendHttpUrl = async (email, name) => {
@@ -22,17 +24,30 @@ const sendHttpUrl = async (email, name) => {
   
 
   try {
-    await transporter.sendMail({
-      from: '"Grooping Reset Password"',
-      to: email,
-      subject: 'Cliquez sur le lien ',
-      html: `<p>Bonjour très cher abonné <b>${name}</b>, Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe.  </p><p><b>https://grouping-pass.vercel.app/${encodedEmail}</b></p>`
+
+     transporter.verify((err, success) => {
+      if (err) console.error("❌ SMTP verify error:", err);
+      else console.log("✅ SMTP server is ready:", success);
     });
 
-  } catch (err) {
-    console.error(err);
+    const info = await transporter.sendMail({
+      from: `"Grouping Reset Password" <noreply@groupingpro.com>`,
+      to: email,
+      subject: "Cliquez sur le lien",
+      html: `<p>Bonjour <b>${name}</b>,</p>
+             <p>Cliquez sur le lien ci-dessous pour réinitialiser votre mot de passe :</p>
+             <p><a href="https://grouping-pass.vercel.app/${encodedEmail}">Réinitialiser</a></p>`
+    });
   
+    console.log("✅ info.messageId:", info.messageId);
+    console.log("✅ accepted:", info.accepted);
+    console.log("⚠️ rejected:", info.rejected);
+    console.log("⚠️ pending:", info.pending);
+    console.log("ℹ️ response:", info.response);
+  } catch (err) {
+    console.error("❌ sendMail error:", err);
   }
+  
 }
 
 
